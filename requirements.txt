@@ -1,0 +1,13 @@
+# Core ML / Deep Learning
+torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+gpytorch
+
+# Data Science Essentials
+numpy
+pandas
+matplotlib
+
+# Optional: useful for experiments and notebooks
+scipy
+tqdm
+jupyterlab
