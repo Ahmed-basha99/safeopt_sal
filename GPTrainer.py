@@ -3,41 +3,66 @@ import torch
 import gpytorch
 from matplotlib import pyplot as plt
 from GPR import GPR
+import config 
 
-# %matplotlib inline
-# %load_ext autoreload
-# %autoreload 2
+class GPTrainer () : 
+    def __init__(self, cfg) : 
+        self.train_x = cfg.train_x
+        self.train_y = cfg.train_y
+        self.test_x = cfg.test_x
+        self.test_y = cfg.test_y
+        self.epochs = cfg.epochs
+        self.lr = cfg.lr
+        self.likelihood = cfg.likelihood
+        self.model = GPR(self.train_x, self.train_y, self.likelihood)
+        self.optimizer = cfg.optimizer_class(self.model.parameters(), lr=self.lr)
 
-train_x = torch.linspace(0, 1, 100)
-train_y = torch.sin(train_x * (2*math.pi)) + torch.randn(train_x.size()) * math.sqrt(0.04)
+    def train(self) :
+        self.model.train()
+        self.likelihood.train()
+        mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.likelihood, self.model)
+        
+        for i in range (50) : 
+            self.optimizer.zero_grad()
+            output = self.model(self.train_x)
+            loss = -mll(output, self.train_y)
+            loss.backward()
+            print('Iter %d/%d - Loss: %.3f   noise: %.3f   L_scale: %.3f' % (
+                i + 1, 50, loss.item(),
+                self.model.likelihood.noise.item(),
+                self.model.covar_module.base_kernel.lengthscale.item()))
+            self.optimizer.step()
+
+    def plot(self) :
+        self.model.eval()
+        self.likelihood.eval()
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+            observed_pred = self.likelihood(self.model(self.test_x))
+            f,ax = plt.subplots(1,1, figsize=(8,6))
+            lower, upper = observed_pred.confidence_region()
+            ax.plot(self.train_x.numpy(), self.train_y.numpy(), 'k*')
+            ax.plot(self.test_x.numpy(), observed_pred.mean.numpy(), 'b')
+            ax.fill_between(self.test_x.numpy(), lower.numpy(), upper.numpy(),alpha = 0.5)
+            ax.set_ylim([-3,3])
+            ax.legend(["observed data", "posterier mean", "uncertainty bounds"])
+            plt.show() 
     
-likelihood = gpytorch.likelihoods.GaussianLikelihood()
-model = GPR(train_x, train_y, likelihood)
+    def evaluate(self) : 
+        self.model.eval()
+        self.likelihood.eval()
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+            observed_pred = self.likelihood(self.model(self.test_x))
+            mean = observed_pred.mean
+            mse = torch.mean((mean - self.test_y)**2)
+            print(f'Mean Squared Error : {mse.item()}')
+            return mse.item()
 
-model.train()
-likelihood.train()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
-mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+    def save_model(self, path) :
+        torch.save(self.model.state_dict(), path)
 
-for i in range (50) : 
-    optimizer.zero_grad()
-    output = model(train_x)
-    loss = -mll(output, train_y)
-    loss.backward()
-    print('Iter %d/%d - Loss: %.3f   noise: %.3f   L_scale: %.3f' % (
-        i + 1, 50, loss.item(),
-        model.likelihood.noise.item(),
-        model.covar_module.base_kernel.lengthscale.item()))
-    optimizer.step()
 
-# Get into evaluation (predictive posterior) mode
-model.eval()
-likelihood.eval()
 
-# Test points are regularly spaced along [0,1]
-# Make predictions by feeding model through likelihood
-with torch.no_grad(), gpytorch.settings.fast_pred_var():
-    test_x = torch.linspace(0, 1, 51)
-    observed_pred = likelihood(model(test_x))
-    print(observed_pred)
-
+trainer = GPTrainer(config)
+trainer.train()
+trainer.plot()
+trainer.evaluate()

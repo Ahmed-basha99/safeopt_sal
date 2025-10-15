@@ -1,5 +1,15 @@
-# Core ML / Deep Learning
-torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+# -------------------------
+# Step 1: Install PyTorch (GPU-enabled)
+# -------------------------
+--extra-index-url https://download.pytorch.org/whl/cu121
+torch
+torchvision
+torchaudio
+
+# -------------------------
+# Step 2: Install other dependencies from PyPI
+# -------------------------
+--index-url https://pypi.org/simple
 gpytorch
 
 # Data Science Essentials

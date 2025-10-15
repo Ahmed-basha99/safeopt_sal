@@ -10,3 +10,4 @@ class GPR (gpytorch.models.ExactGP) :
         mean_func = self.mean_module(x)
         covar_func = self.covar_module(x)
         return gpytorch.distributions.MultivariateNormal(mean_func,covar_func) 
+
