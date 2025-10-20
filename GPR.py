@@ -5,7 +5,7 @@ class GPR (gpytorch.models.ExactGP) :
         super(GPR,self).__init__(train_x, train_y, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
         self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
-
+            
     def forward(self,x) : 
         mean_func = self.mean_module(x)
         covar_func = self.covar_module(x)

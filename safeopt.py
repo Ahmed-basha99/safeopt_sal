@@ -4,6 +4,7 @@ import config_safeopt as cfg
 from GPTrainer import GPTrainer
 import math
 import gp_config as gp_cfg
+
 def safeopt_algo():
 
     train_x = cfg.INITIAL_X
@@ -25,6 +26,7 @@ def safeopt_algo():
 
         gp_trainer.train()
 
+        # get posterior mean and std 
         gp_trainer.model.eval()
         gp_trainer.likelihood.eval()
         with torch.no_grad(), gpytorch.settings.fast_pred_var():
@@ -55,7 +57,7 @@ def safeopt_algo():
         wt_S[S_mask] = wt_D[S_mask]
 
         xt = cfg.DOMAIN[torch.argmax(wt_S)]
-        yt = cfg.ground_truth(xt)
+        yt = cfg.ground_truth(xt) + torch.randn(1) * 0.2 # 
 
         print (train_y.shape, yt.unsqueeze(0).shape , yt.shape)
         train_x = torch.cat([train_x, xt.unsqueeze(0)])

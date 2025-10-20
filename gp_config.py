@@ -1,8 +1,8 @@
 import gpytorch, torch, math
 
 # training : 
-epochs = 50
-lr = 0.1
+epochs = 1
+lr = 0.2
 optimizer_class = torch.optim.Adam
 # model : 
 mean = gpytorch.means.ConstantMean()

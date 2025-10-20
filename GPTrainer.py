@@ -22,7 +22,7 @@ class GPTrainer () :
         self.likelihood.train()
         mll = gpytorch.mlls.ExactMarginalLogLikelihood(self.likelihood, self.model)
         
-        for i in range (50) : 
+        for i in range (config.epochs) : # check this later
             self.optimizer.zero_grad()
             output = self.model(self.train_x)
             loss = -mll(output, self.train_y)
