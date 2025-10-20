@@ -3,12 +3,12 @@ import torch
 import gpytorch
 from matplotlib import pyplot as plt
 from GPR import GPR
-import config 
+import gp_config as config 
 
 class GPTrainer () : 
-    def __init__(self, cfg) : 
-        self.train_x = cfg.train_x
-        self.train_y = cfg.train_y
+    def __init__(self, cfg, train_x, train_y) : 
+        self.train_x = train_x
+        self.train_y = train_y
         self.test_x = cfg.test_x
         self.test_y = cfg.test_y
         self.epochs = cfg.epochs
@@ -62,7 +62,7 @@ class GPTrainer () :
 
 
 
-trainer = GPTrainer(config)
-trainer.train()
-trainer.plot()
-trainer.evaluate()
+# trainer = GPTrainer(config)
+# trainer.train()
+# trainer.plot()
+# trainer.evaluate()
