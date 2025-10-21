@@ -17,6 +17,12 @@ class GPTrainer () :
         self.model = GPR(self.train_x, self.train_y, self.likelihood)
         self.optimizer = cfg.optimizer_class(self.model.parameters(), lr=self.lr)
 
+    def train_updated_data(self, train_x, train_y) : 
+        self.train_x = train_x
+        self.train_y = train_y
+        self.model.set_train_data(self.train_x, self.train_y, strict = False)
+        self.train()
+
     def train(self) :
         self.model.train()
         self.likelihood.train()
@@ -27,10 +33,12 @@ class GPTrainer () :
             output = self.model(self.train_x)
             loss = -mll(output, self.train_y)
             loss.backward()
-            print('Iter %d/%d - Loss: %.3f   noise: %.3f   L_scale: %.3f' % (
-                i + 1, 50, loss.item(),
+            print('Iter %d/%d - Loss: %.3f   noise: %.3f   Length_scale: %.3f   output_scale: %.3f' % (
+                i + 1, config.epochs, loss.item(),
                 self.model.likelihood.noise.item(),
-                self.model.covar_module.base_kernel.lengthscale.item()))
+                self.model.covar_module.base_kernel.lengthscale.item(),
+                self.model.covar_module.outputscale.item()))
+            
             self.optimizer.step()
 
     def plot(self) :
@@ -56,7 +64,14 @@ class GPTrainer () :
             mse = torch.mean((mean - self.test_y)**2)
             print(f'Mean Squared Error : {mse.item()}')
             return mse.item()
-
+    def get_posterier(self,x) : 
+        self.model.eval()
+        self.likelihood.eval()
+        with torch.no_grad(), gpytorch.settings.fast_pred_var():
+            posterior = self.likelihood(self.model(x))
+            mean = posterior.mean
+            std_dev = posterior.stddev 
+            return mean, std_dev
     def save_model(self, path) :
         torch.save(self.model.state_dict(), path)
 

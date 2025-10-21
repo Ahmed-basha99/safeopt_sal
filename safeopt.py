@@ -24,19 +24,14 @@ def safeopt_algo():
 
     for i in range(cfg.N_ITERATIONS):
 
+        gp_trainer = GPTrainer(gp_cfg, train_x, train_y)
         gp_trainer.train()
-
-        # get posterior mean and std 
-        gp_trainer.model.eval()
-        gp_trainer.likelihood.eval()
-        with torch.no_grad(), gpytorch.settings.fast_pred_var():
-            posterior = gp_trainer.likelihood(gp_trainer.model(cfg.DOMAIN))
-            mean = posterior.mean
-            std_dev = posterior.stddev
         
+        mean, std_dev = gp_trainer.get_posterier(cfg.DOMAIN)
+
         Q_lower = mean - math.sqrt(cfg.BETA) * std_dev
         Q_upper = mean + math.sqrt(cfg.BETA) * std_dev
-        
+
         C_lower = torch.max(C_lower, Q_lower) 
         C_upper = torch.min(C_upper,Q_upper)
 
@@ -47,11 +42,10 @@ def safeopt_algo():
             lipschitz_safe = C_lower[s_idx] - cfg.LIPSCHITZ_CONSTANT * distance_matrix[s_idx] >= cfg.SAFETY_THRESHOLD
             new_S_mask = torch.logical_or(new_S_mask, lipschitz_safe)
         S_mask = new_S_mask
-        
+
         if not torch.any(S_mask):
             print(f"Iteration {i+1}: Safe set is empty. Stopping.")
-            break
-
+            
         wt_D = C_upper - C_lower
         wt_S = torch.full_like(wt_D, -1e9)
         wt_S[S_mask] = wt_D[S_mask]
@@ -63,9 +57,8 @@ def safeopt_algo():
         train_x = torch.cat([train_x, xt.unsqueeze(0)])
         train_y = torch.cat([train_y, yt])
 
-    
-    print(f"Final train set size : {len(train_x)} \n Final safe set = {torch.where(S_mask)[0].tolist()}")
-    
+
+print(f"Final train set size : {len(train_x)} \n Final safe set = {torch.where(S_mask)[0].tolist()}")
 
 if __name__ == '__main__':
     safeopt_algo()

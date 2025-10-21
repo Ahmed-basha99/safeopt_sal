@@ -1,7 +1,7 @@
 import gpytorch, torch, math
 
 # training : 
-epochs = 1
+epochs = 25
 lr = 0.2
 optimizer_class = torch.optim.Adam
 # model : 
