@@ -58,7 +58,5 @@ def safeopt_algo():
         train_y = torch.cat([train_y, yt])
 
 
-print(f"Final train set size : {len(train_x)} \n Final safe set = {torch.where(S_mask)[0].tolist()}")
-
 if __name__ == '__main__':
     safeopt_algo()
