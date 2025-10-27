@@ -64,6 +64,7 @@ class GPTrainer () :
             mse = torch.mean((mean - self.test_y)**2)
             print(f'Mean Squared Error : {mse.item()}')
             return mse.item()
+        
     def get_posterier(self,x) : 
         self.model.eval()
         self.likelihood.eval()

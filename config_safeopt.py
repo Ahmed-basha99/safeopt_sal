@@ -12,7 +12,7 @@ def ground_truth(x):
 # h
 SAFETY_THRESHOLD = -0.2
 
-INITIAL_SAFE_INDICES = torch.tensor([ 4,25, 20 , 49]) 
+INITIAL_SAFE_INDICES = torch.tensor([ 2, 4,50]) 
 INITIAL_X = DOMAIN[INITIAL_SAFE_INDICES]
 INITIAL_Y = ground_truth(INITIAL_X).flatten()
 
