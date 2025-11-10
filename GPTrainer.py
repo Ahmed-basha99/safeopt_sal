@@ -17,11 +17,10 @@ class GPTrainer () :
         self.model = GPR(self.train_x, self.train_y, self.likelihood)
         self.optimizer = cfg.optimizer_class(self.model.parameters(), lr=self.lr)
 
-    def train_updated_data(self, train_x, train_y) : 
+    def update_training_data(self, train_x, train_y) : 
         self.train_x = train_x
         self.train_y = train_y
         self.model.set_train_data(self.train_x, self.train_y, strict = False)
-        self.train()
 
     def train(self) :
         self.model.train()
